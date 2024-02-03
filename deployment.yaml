@@ -1,0 +1,76 @@
+version: '3'
+
+services:
+#SHOP
+  manageShopDB:
+    image: mysql
+    environment:
+      - MYSQL_ROOT_PASSWORD=root
+    healthcheck:
+      test: ["CMD","mysqladmin","ping","-h","localhost"]
+      timeout: 10s
+      retries: 10
+    volumes:
+      - shopdbdata:/var/lib/mysql
+    networks:
+      - shopnet
+  manageShopDBM:
+    image: manageshopdbm
+    environment:
+      - DATABASE_URL=manageShopDB
+    depends_on:
+      manageShopDB:
+        condition: service_healthy
+    networks:
+      - shopnet
+  manageShop:
+    image: manageshop
+    environment:
+      - DATABASE_URL=manageShopDB
+    depends_on:
+      - manageShopDBM
+    networks:
+      - shopnet
+    ports:
+      - 5001:5001
+#Accounts
+  manageAccDB:
+    image: mysql
+    environment:
+      - MYSQL_ROOT_PASSWORD=root
+    healthcheck:
+      test: ["CMD","mysqladmin","ping","-h","localhost"]
+      timeout: 10s
+      retries: 10
+    volumes:
+      - accdbdata:/var/lib/mysql
+    networks:
+      - accnet
+  manageAccDBM:
+    image: manageaccdbm
+    environment:
+      - DATABASE_URL=manageAccDB
+    depends_on:
+      manageAccDB:
+        condition: service_healthy
+    networks:
+      - accnet
+  manageAcc:
+    image: manageacc
+    environment:
+      - DATABASE_URL=manageAccDB
+    depends_on:
+      - manageAccDBM
+    networks:
+      - accnet
+    ports:
+      - 5002:5002
+
+volumes:
+  shopdbdata:
+  accdbdata:
+
+networks:
+  shopnet:
+  accnet:
+

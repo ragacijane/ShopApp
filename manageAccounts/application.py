@@ -1,4 +1,4 @@
-from email.utils import parseaddr
+import re
 
 from flask import Flask, request, Response, jsonify
 from sqlalchemy import and_
@@ -11,9 +11,9 @@ application = Flask(__name__)
 application.config.from_object(Configuration)
 jwt = JWTManager(application)
 
-@application.route('/test', methods=['GET'])
-def test():
-    return "Hello World!"
+@application.route("/",methods=["GET"])
+def index():
+    return "Hello World"
 
 @application.route("/register_<inputRole>", methods=["POST"])
 def registerAcc(inputRole):
@@ -21,43 +21,43 @@ def registerAcc(inputRole):
     surname = request.json.get("surname", "")
     email = request.json.get("email", "")
     password = request.json.get("password", "")
-
+    #.replace(" ","")
     emptyEmail = len(email) == 0
     emptyPassword = len(password) == 0
     emptyForename = len(forename) == 0
     emptySurname = len(surname) == 0
 
-    fieldname = lambda a, b, c, d: a if emptyEmail else b if emptyPassword else\
-                c if emptyForename else d
-    result = parseaddr(email)
-    wrongEmail = len(result[1]) == 0
 
     userExists = User.query.filter(User.email==email).first()
 
-    if (emptyEmail or emptyPassword or emptyForename or emptySurname):
-        return jsonify(message=f"Field {fieldname('email','password','forename','surname')} is missing."),400
+
+    regex = r'\b[A-Za-z0-9._%+-]+@[A-Za-z0-9.-]+\.[A-Z|a-z]{2,7}\b'
+    wrongEmail = re.fullmatch(regex,email)
+
+    # fieldname = lambda a, b, c, d: a if emptyForename else b if emptySurname else \
+    #     c if emptyEmail else d
+    # if (emptyEmail or emptyPassword or emptyForename or emptySurname):
+    #     return jsonify(message=f"Field {fieldname('forename','surname','email','password')} is missing."),400
+    if emptyForename:
+        return jsonify(message="Field forename is missing."), 400
+    elif emptySurname:
+        return jsonify(message="Field surname is missing."), 400
+    elif emptyEmail:
+        return jsonify(message="Field email is missing."), 400
+    elif emptyPassword:
+        return jsonify(message="Field password is missing."), 400
+    elif (wrongEmail == None):
+        return jsonify(message="Invalid email."),400
     elif (len(password) < 8):
         return jsonify(message="Invalid password."),400
-    elif wrongEmail:
-        return jsonify(message = "Invalid email."),400
-    elif(userExists):
-         return jsonify(message = "Email already exists."),400
+    elif (userExists != None):
+         return jsonify(message="Email already exists."),400
 
     user = User(email = email, password = password, forename = forename, surname = surname, role=inputRole)
     database.session.add(user)
     database.session.commit()
 
-    # role=Role.query.filter(Role.name==inputRole).first()
-    #
-    # userRole = UserRole(userId=user.id, roleId=role.id)
-    # database.session.add(userRole)
-    # database.session.commit()
-
     return Response(status=200)
-
-@application.route("/",methods=["GET"])
-def index():
-    return "Hello World"
 
 @application.route("/login", methods=["POST"])
 def loginAcc():
@@ -67,16 +67,18 @@ def loginAcc():
     emptyEmail = len(email) == 0
     emptyPasswor = len(password) == 0
 
-    if(emptyEmail):
-        return jsonify(message = "Field email is missing"),400
-    elif(emptyPasswor):
-        return jsonify(message = "Field password is missing"),400
-    elif(parseaddr(email)[1] == 0):
-        return jsonify(message = "Invalid email."),400
+    regex = r'\b[A-Za-z0-9._%+-]+@[A-Za-z0-9.-]+\.[A-Z|a-z]{2,7}\b'
+    wrongEmail = re.fullmatch(regex, email)
 
     user = User.query.filter(and_(User.email == email, User.password == password)).first()
 
-    if(not user):
+    if(emptyEmail):
+        return jsonify(message = "Field email is missing."),400
+    elif(emptyPasswor):
+        return jsonify(message = "Field password is missing."),400
+    elif(wrongEmail == None):
+        return jsonify(message = "Invalid email."),400
+    elif(user == None):
         return jsonify(message = "Invalid credentials."),400
 
     additionalClaims = {
@@ -84,7 +86,7 @@ def loginAcc():
         "password": user.password,
         "forename": user.forename,
         "surname": user.surname,
-        "roles": user.role
+        "role": user.role
     }
 
     accessToken = create_access_token(identity=user.email, additional_claims=additionalClaims)
@@ -97,12 +99,12 @@ def loginAcc():
 def deleteAcc():
     identity = get_jwt_identity()
     userExist = User.query.filter(User.email == identity).first()
-    if(userExist):
+    if(userExist == None):
+        return jsonify(message = "Unknown user."), 400
+    else:
         User.query.filter(User.email == identity).delete()
         database.session.commit()
         return Response(status=200)
-    else:
-        return jsonify(message = "Unknown user."), 400
 
 
 if __name__ == "__main__":

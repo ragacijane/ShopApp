@@ -11,7 +11,7 @@ services:
       timeout: 10s
       retries: 10
     volumes:
-      - shopdbdata:/var/lib/mysql
+      - shopdisk:/var/lib/mysql
     networks:
       - shopnet
   manageShopDBM:
@@ -43,7 +43,7 @@ services:
       timeout: 10s
       retries: 10
     volumes:
-      - accdbdata:/var/lib/mysql
+      - accdisk:/var/lib/mysql
     networks:
       - accnet
   manageAccDBM:
@@ -67,8 +67,8 @@ services:
       - 5002:5002
 
 volumes:
-  shopdbdata:
-  accdbdata:
+  shopdisk:
+  accdisk:
 
 networks:
   shopnet:

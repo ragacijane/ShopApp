@@ -1,14 +1,12 @@
 import datetime
 import io
 import csv
-import json
 from flask import Flask, request, Response, jsonify
-from sqlalchemy.sql.functions import user
 
 from configuration import Configuration
-from manageShop.roleDecorator import roleCheck
+from roleDecorator import roleCheck
 from model import database, Products, Orders
-from flask_jwt_extended import JWTManager, create_access_token, get_jwt_identity, jwt_required, get_jwt
+from flask_jwt_extended import JWTManager, get_jwt_identity, jwt_required
 
 application = Flask(__name__)
 application.config.from_object(Configuration)
@@ -244,7 +242,10 @@ def pick_up_order():
     database.session.commit()
     return Response(status=200)
 
+@application.route("/",methods=["GET"])
+def index():
+    return "Hello World"
 
 if __name__ == "__main__":
     database.init_app(application)
-    application.run(debug=True, port = 5001)
+    application.run(debug=True, host = "0.0.0.0", port = 5001)

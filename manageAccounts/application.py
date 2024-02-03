@@ -55,8 +55,9 @@ def registerAcc(inputRole):
 
     return Response(status=200)
 
-
-
+@application.route("/",methods=["GET"])
+def index():
+    return "Hello World"
 
 @application.route("/login", methods=["POST"])
 def loginAcc():

@@ -11,27 +11,44 @@ from flask_jwt_extended import JWTManager, get_jwt_identity, jwt_required
 application = Flask(__name__)
 application.config.from_object(Configuration)
 jwt = JWTManager(application)
+def isfloat(x):
+    try:
+        float(x)
+        return True
+    except ValueError:
+        return False
 
+print(isfloat('s12'))
+print(isfloat('1.123'))
 
 @application.route('/update',methods=['POST'])
 @jwt_required()
 @roleCheck(role='owner')
 def updateProduct():
-    file=request.files
-    content = file.stream.read().decode('utf-8')
+    fname=request.files.getlist('file')
+    if ( len(fname) == 0):
+        return jsonify(message="Field file is missing."), 400
+    content = request.files['file'].stream.read().decode('utf-8')
     stream = io.StringIO(content)
     reader = csv.reader(stream)
-    if(len(reader) == 0):
-        return jsonify(message="Field file missing."), 400
     products = []
     counter = 0
     for row in reader:
         productExist = Products.query.filter(Products.product == row[1]).first()
-        if(len(row[0]) == 0 or len(row[1]) == 0 or len(row[2]) == 0):
+        if(len(row) != 3):
+            print(f"Greska u liniji {counter}, {row}")
+            return jsonify(message=f"Incorrect number of values on line {counter}."), 400
+        elif(len(row[0]) == 0 or len(row[1]) == 0 or len(row[2]) == 0):
+            print(f"Greska u liniji {counter}, {row}")
             return jsonify(message = f"Incorrect number of values on line {counter}."), 400
-        elif(float(row[2]) < 0):
+        elif(isfloat(row[2]) == False):
+            print(f"Greska u liniji {counter}, {row}")
             return jsonify(message=f"Incorrect price on line {counter}."), 400
-        elif(productExist == None):
+        elif(float(row[2]) < 0):
+            print(f"Greska u liniji {counter}, {row}")
+            return jsonify(message=f"Incorrect price on line {counter}."), 400
+        elif(productExist != None):
+            print(f"Greska u liniji {counter}, {row}")
             return jsonify(message=f"Product {row[1]} already exists."), 400
         product = Products (product=row[1], category=row[0], price=float(row[2]))
         products.append(product)
@@ -141,14 +158,14 @@ def orderProduct():
 @jwt_required()
 @roleCheck(role = "customer")
 def searchProduct():
-    if request.args.get("name")is not None:
-        name = request.args.get("name")
+    if request.args.get("name") is not None:
+        nameStr = request.args.get("name")
     else:
-        name = ""
+        nameStr = ""
     if request.args.get("category") is not None:
-        category = request.args.get("category")
+        categoryStr = request.args.get("category")
     else:
-        category = ""
+        categoryStr = ""
 
     listOfCategories = []
     listOfProducts = []
@@ -160,12 +177,12 @@ def searchProduct():
             "price": float()
         }
         categoriesSplit = line.category.split('|')
-        for cat in categoriesSplit:
-            if cat not in listOfCategories and category in cat.lower():
-                if name in line.product.lower():
-                    listOfCategories.append(cat)
-                    jsonProd["categories"].append(cat)
-        if name in line.product.lower() and jsonProd["categories"] != []:
+        for category in categoriesSplit:
+            if category not in listOfCategories and categoryStr in category.lower():
+                if nameStr in line.product.lower():
+                    listOfCategories.append(category)
+                    jsonProd["categories"].append(category)
+        if nameStr in line.product.lower() and jsonProd["categories"] != []:
             jsonProd["id"] = line.id
             jsonProd["name"] = line.product
             jsonProd["price"] = float(line.price)

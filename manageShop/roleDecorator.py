@@ -1,6 +1,6 @@
 from functools import wraps
 
-from flask import Response
+from flask import Response, jsonify
 from flask_jwt_extended import verify_jwt_in_request, get_jwt
 
 def roleCheck(role):
@@ -12,6 +12,6 @@ def roleCheck(role):
             if ( ("role" in claims) and (role in claims["role"])):
                 return function(*arguments, **keywordArguments)
             else:
-                return Response(status=403)
+                return jsonify(msg = "Missing Authorization Header"),401
         return decorator
     return innerRole

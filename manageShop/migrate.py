@@ -9,8 +9,9 @@ application.config.from_object(Configuration)
 
 migrateObject = Migrate(application, database)
 
-# if(database_exists(application.config['SQLALCHEMY_DATABASE_URI'])):
-#      drop_database(application.config['SQLALCHEMY_DATABASE_URI'])
+if(database_exists(application.config['SQLALCHEMY_DATABASE_URI'])):
+    drop_database(application.config['SQLALCHEMY_DATABASE_URI'])
+
 if (not database_exists(application.config['SQLALCHEMY_DATABASE_URI'])):
     create_database(application.config["SQLALCHEMY_DATABASE_URI"])
 

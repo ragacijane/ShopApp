@@ -9,9 +9,9 @@ def roleCheck(role):
         def decorator(*arguments, **keywordArguments):
             verify_jwt_in_request()
             claims = get_jwt()
-            if ( ("roles" in claims) and (role in claims["roles"])):
+            if ( ("role" in claims) and (role in claims["role"])):
                 return function(*arguments, **keywordArguments)
             else:
-                return Response(status=401)
+                return Response(status=403)
         return decorator
     return innerRole

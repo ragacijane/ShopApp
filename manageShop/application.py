@@ -17,9 +17,12 @@ jwt = JWTManager(application)
 @jwt_required()
 @roleCheck(role='owner')
 def updateProduct():
-    content = request.files[""].stream.read().decode('utf-8')
+    file=request.files
+    content = file.stream.read().decode('utf-8')
     stream = io.StringIO(content)
     reader = csv.reader(stream)
+    if(len(reader) == 0):
+        return jsonify(message="Field file missing."), 400
     products = []
     counter = 0
     for row in reader:
@@ -28,8 +31,8 @@ def updateProduct():
             return jsonify(message = f"Incorrect number of values on line {counter}."), 400
         elif(float(row[2]) < 0):
             return jsonify(message=f"Incorrect price on line {counter}."), 400
-        elif(productExist):
-            return jsonify(message=f"Product {row[1]} allready exists."), 400
+        elif(productExist == None):
+            return jsonify(message=f"Product {row[1]} already exists."), 400
         product = Products (product=row[1], category=row[0], price=float(row[2]))
         products.append(product)
         counter+=1

@@ -1,0 +1,18 @@
+auth
+
+python main.py --type authentication --authentication-url http://127.0.0.1:5002 --jwt-secret JWT_SECRET_KEY --roles-field role --owner-role owner --customer-role customer --courier-role courier
+
+level 0
+
+python main.py --type level0 --with-authentication --authentication-url http://127.0.0.1:5002 --owner-url http://127.0.0.1:5001 --customer-url http://127.0.0.1:5001
+
+level 1
+
+python main.py --type level1 --with-authentication --authentication-url http://127.0.0.1:5002 --owner-url http://127.0.0.1:5001 --customer-url http://127.0.0.1:5001
+
+
+
+
+
+
+

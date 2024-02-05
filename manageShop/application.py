@@ -18,9 +18,6 @@ def isfloat(x):
     except ValueError:
         return False
 
-print(isfloat('s12'))
-print(isfloat('1.123'))
-
 @application.route('/update',methods=['POST'])
 @jwt_required()
 @roleCheck(role='owner')
@@ -64,7 +61,7 @@ def getProductStatistics():
     for order in orders:
         listOfProducts=[int(x) for x in order.products_id.split("|")]
         listofQuantities=[int (x) for x in order.products_quantity.split("|")]
-        for (product, quantity) in (listOfProducts, listofQuantities):
+        for (product, quantity) in zip(listOfProducts, listofQuantities):
             if(order.status == "COMPLETE"):
                 if product not in products:
                     products.append(product)
@@ -79,10 +76,12 @@ def getProductStatistics():
                     waiting.append(quantity)
                 else:
                     waiting[products.index(product)]+=quantity
-    for product in products:
-        i=products.index(product)
-        productName=Products.query.filter(Products.id == product).first()
-        statistics.append({"name":productName.product,"sold":sold[i],"waiting":waiting[i]})
+    for productId in products:
+        i=products.index(productId)
+        productObj = Products.query.filter(Products.id == productId).first()
+        if(productObj == None):
+            print(f"product {productId} not found")
+        statistics.append({"name": productObj.product,"sold":sold[i],"waiting":waiting[i]})
     return jsonify(statistics=statistics),200
 
 @application.route('/category_statistics',methods=['GET'])
@@ -92,19 +91,25 @@ def getCategoryStatistics():
     orders = Orders.query.all()
     sold = []
     statistics = []
+    for line in Products.query.all():
+        listOfCategories = line.category.split("|")
+        for category in listOfCategories:
+            if category not in statistics:
+                statistics.append(category)
+                sold.append(0)
     for order in orders:
         if (order.status == "COMPLETE"):
             listOfProducts = [int(x) for x in order.products_id.split("|")]
             listofQuantities = [int(x) for x in order.products_quantity.split("|")]
-            for (product, quantity) in (listOfProducts, listofQuantities):
-                tempProd=Products.query.filter(Products.id == product).first()
+            for (product, quantity) in zip(listOfProducts, listofQuantities):
+                print(product)
+                print (quantity)
+                tempProd = Products.query.filter(Products.id == product).first()
+                if(tempProd == None):
+                    print(f"product {product} not found")
                 categories= tempProd.category.split("|")
                 for category in categories:
-                    if category not in statistics:
-                        statistics.append(category)
-                        sold.append(quantity)
-                    else:
-                        sold[statistics.index(category)]+=quantity
+                    sold[statistics.index(category)]+=quantity
     stats=dict(zip(statistics,sold))
     sortedStats=dict(sorted(stats.items(),key=lambda item: (-item[1], item[0])))
     statistics=list(sortedStats.keys())
@@ -205,7 +210,7 @@ def statusOfOrder():
             "status":order.status,
             "timestamp":order.timestamp.isoformat()
         }
-        for (product,quantity) in (listOfProducts,listofQuantities):
+        for (product,quantity) in zip(listOfProducts,listofQuantities):
             jsonProd = {
                 "categories": [],
                 "name": "",
@@ -227,13 +232,14 @@ def statusOfOrder():
 @jwt_required()
 @roleCheck(role="customer")
 def deliveredOrders():
-
     tempId=request.json.get("id")
     if(tempId==None):
         return jsonify(message="Missing order id."),400
     orderEmpty = Orders.query.filter(Orders.id == tempId).first()
     if((not isinstance(tempId,int)) or tempId < 0 or orderEmpty==None):
         return jsonify(message="Invalid order id."),400
+    if(orderEmpty.status!="PENDING"):
+        return jsonify(message="Invalid order id."), 400
     Orders.query.filter(Orders.id == tempId).update({"status":"COMPLETE"})
     database.session.commit()
     return Response(status=200)

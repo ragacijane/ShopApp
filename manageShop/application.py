@@ -159,6 +159,16 @@ def orderProduct():
 @application.route('/search', methods=["GET"])
 @jwt_required()
 @roleCheck(role = "customer")
+# SELECT *
+# FROM table
+# WHERE name LIKE '%c%';
+# result = session.query(your_table).filter(
+#     or_(
+#         your_table.c.categories.like('%|example_category|%'),
+#         your_table.c.categories.like('example_category|%'),
+#         your_table.c.categories.like('%|example_category')
+#     )
+# ).all()
 def searchProduct():
     if request.args.get("name") is not None:
         nameStr = request.args.get("name")
@@ -168,7 +178,7 @@ def searchProduct():
         categoryStr = request.args.get("category")
     else:
         categoryStr = ""
-
+    Products.query.where()
     listOfCategories = []
     listOfProducts = []
     for line in Products.query.all():

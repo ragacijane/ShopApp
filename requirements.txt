@@ -12,3 +12,4 @@ itsdangerous==2.0.1
 werkzeug==2.0.3
 markupsafe==2.0.1
 redis==3.5.3
+pyspark==3.4.0

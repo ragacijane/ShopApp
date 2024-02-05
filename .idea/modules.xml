@@ -2,7 +2,9 @@
 <project version="4">
   <component name="ProjectModuleManager">
     <modules>
+      <module fileurl="file://$PROJECT_DIR$/../Blockchain/.idea/Blockchain.iml" filepath="$PROJECT_DIR$/../Blockchain/.idea/Blockchain.iml" />
       <module fileurl="file://$PROJECT_DIR$/.idea/ShopManager.iml" filepath="$PROJECT_DIR$/.idea/ShopManager.iml" />
+      <module fileurl="file://$PROJECT_DIR$/../Spark/.idea/Spark.iml" filepath="$PROJECT_DIR$/../Spark/.idea/Spark.iml" />
     </modules>
   </component>
 </project>

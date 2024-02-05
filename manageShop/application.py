@@ -36,19 +36,14 @@ def updateProduct():
     for row in reader:
         productExist = Products.query.filter(Products.product == row[1]).first()
         if(len(row) != 3):
-            print(f"Greska u liniji {counter}, {row}")
             return jsonify(message=f"Incorrect number of values on line {counter}."), 400
         elif(len(row[0]) == 0 or len(row[1]) == 0 or len(row[2]) == 0):
-            print(f"Greska u liniji {counter}, {row}")
             return jsonify(message = f"Incorrect number of values on line {counter}."), 400
         elif(isfloat(row[2]) == False):
-            print(f"Greska u liniji {counter}, {row}")
             return jsonify(message=f"Incorrect price on line {counter}."), 400
         elif(float(row[2]) < 0):
-            print(f"Greska u liniji {counter}, {row}")
             return jsonify(message=f"Incorrect price on line {counter}."), 400
         elif(productExist != None):
-            print(f"Greska u liniji {counter}, {row}")
             return jsonify(message=f"Product {row[1]} already exists."), 400
         product = Products (product=row[1], category=row[0], price=float(row[2]))
         products.append(product)
@@ -120,29 +115,31 @@ def getCategoryStatistics():
 @jwt_required()
 @roleCheck(role = "customer")
 def orderProduct():
-    requests=request.json.get("request")
+    listOfRequests=request.json.get("requests")
+    print(listOfRequests)
     productsIds=[]
     productQuantities=[]
     prices=[]
-    if(requests is None):
-        return jsonify(message="Field request is missing")
-    for temp in requests:
-        productExist = Products.query.filter(Products.id == temp['id']).first()
-        if(temp['id'] == ''):
-            return jsonify(message=f"Product id is missing for request number {requests.index(temp)}."),400
-        elif(temp['quantity'] == ''):
-            return jsonify(message=f"Product quantity is missing for request number {requests.index(temp)}."),400
-        elif(not isinstance(temp['id'], int) or temp['id'] < 0):
-            return jsonify(message=f"Invalid id for request number {requests.index(temp)}."),400
-        elif (not isinstance(temp['quantity'], int) or temp['quantity'] < 0):
-            return jsonify(message=f"Invalid quantity for request number {requests.index(temp)}."),400
-        elif(not productExist):
-            return jsonify(message=f"Invalid product for request number {requests.index(temp)}."),400
+    if(listOfRequests == None):
+        return jsonify(message="Field requests is missing."),400
+    for tempRequest in listOfRequests:
+
+        if('id' not in tempRequest or tempRequest['id'] == ''):
+            return jsonify(message=f"Product id is missing for request number {listOfRequests.index(tempRequest)}."),400
+        elif('quantity' not in tempRequest or tempRequest['quantity'] == ''):
+            return jsonify(message=f"Product quantity is missing for request number {listOfRequests.index(tempRequest)}."),400
+        elif(not isinstance(tempRequest['id'], int) or tempRequest['id'] < 0):
+            return jsonify(message=f"Invalid product id for request number {listOfRequests.index(tempRequest)}."),400
+        elif (not isinstance(tempRequest['quantity'], int) or tempRequest['quantity'] < 0):
+            return jsonify(message=f"Invalid product quantity for request number {listOfRequests.index(tempRequest)}."),400
+        productExist = Products.query.filter(Products.id == tempRequest['id']).first()
+        if(productExist == None):
+            return jsonify(message=f"Invalid product for request number {listOfRequests.index(tempRequest)}."),400
         else:
-            productsIds.append(temp['id'])
-            productQuantities.append(temp['quantity'])
-            product=Products.query.filter(Products.id == temp['id']).first()
-            prices.append(product.price*temp['quantity'])
+            productsIds.append(tempRequest['id'])
+            productQuantities.append(tempRequest['quantity'])
+            product=Products.query.filter(Products.id == tempRequest['id']).first()
+            prices.append(product.price*tempRequest['quantity'])
     time=datetime.datetime.now().replace(microsecond=0).isoformat()
     totalPrice=sum(prices)
     order= Orders(user_email = get_jwt_identity(),\
@@ -172,15 +169,16 @@ def searchProduct():
     for line in Products.query.all():
         jsonProd = {
             "categories": [],
-            "id": id,
+            "id": int(),
             "name": "",
             "price": float()
         }
         categoriesSplit = line.category.split('|')
         for category in categoriesSplit:
-            if category not in listOfCategories and categoryStr in category.lower():
-                if nameStr in line.product.lower():
-                    listOfCategories.append(category)
+            if nameStr in line.product.lower():
+                if categoryStr in category.lower():
+                    if category not in listOfCategories:
+                        listOfCategories.append(category)
                     jsonProd["categories"].append(category)
         if nameStr in line.product.lower() and jsonProd["categories"] != []:
             jsonProd["id"] = line.id
@@ -215,7 +213,8 @@ def statusOfOrder():
                 "quantity": int()
             }
             tempProduct=Products.query.filter(Products.id == product).first()
-            jsonProd["categories"].append(tempProduct.category.split("|"))
+            for cat in tempProduct.category.split("|"):
+                jsonProd["categories"].append(cat)
             jsonProd["name"] = tempProduct.product
             jsonProd["price"] = tempProduct.price
             jsonProd["quantity"] =quantity
@@ -228,12 +227,13 @@ def statusOfOrder():
 @jwt_required()
 @roleCheck(role="customer")
 def deliveredOrders():
+
     tempId=request.json.get("id")
-    orderEmpty = Orders.query.filter(Orders.id == tempId).first()
     if(tempId==None):
         return jsonify(message="Missing order id."),400
-    elif((not isinstance(tempId,int)) or tempId < 0 or orderEmpty==None):
-        return jsonify(message="Invalid order id.”"),400
+    orderEmpty = Orders.query.filter(Orders.id == tempId).first()
+    if((not isinstance(tempId,int)) or tempId < 0 or orderEmpty==None):
+        return jsonify(message="Invalid order id."),400
     Orders.query.filter(Orders.id == tempId).update({"status":"COMPLETE"})
     database.session.commit()
     return Response(status=200)
@@ -253,11 +253,13 @@ def orders_to_deliver():
 @roleCheck(role="courier")
 def pick_up_order():
     tempId= request.json.get("id")
-    orderEmpty = Orders.query.filter(Orders.id == tempId).first()
     if (tempId == None):
         return jsonify(message="Missing order id."), 400
-    elif ((not isinstance(tempId, int)) or tempId < 0 or orderEmpty.status != "CREATED"):
-        return jsonify(message="Invalid order id.”"), 400
+    orderEmpty = Orders.query.filter(Orders.id == tempId).first()
+    if ((not isinstance(tempId, int)) or tempId < 0 or orderEmpty==None):
+        return jsonify(message="Invalid order id."), 400
+    if orderEmpty.status != "CREATED":
+        return jsonify(message="Invalid order id."), 400
     Orders.query.filter(Orders.id == tempId).update({"status": "PENDING"})
     database.session.commit()
     return Response(status=200)

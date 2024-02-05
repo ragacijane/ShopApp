@@ -10,7 +10,9 @@ level 1
 
 python main.py --type level1 --with-authentication --authentication-url http://127.0.0.1:5002 --owner-url http://127.0.0.1:5001 --customer-url http://127.0.0.1:5001
 
+level 2
 
+python main.py --type level2 --with-authentication --authentication-url http://127.0.0.1:5002 --owner-url http://127.0.0.1:5001 --customer-url http://127.0.0.1:5001 --courier-url http://127.0.0.1:5001
 
 
 

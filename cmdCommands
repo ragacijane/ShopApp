@@ -21,3 +21,7 @@ python main.py --type level3 --with-authentication --authentication-url http://1
 
 
 
+
+PYSPARK_DRIVER_PYTHON=jupyter;PYSPARK_DRIVER_PYTHON_ARGS=notebook;PYSPARK_PYTHON=python;PYTHONUNBUFFERED=1
+
+

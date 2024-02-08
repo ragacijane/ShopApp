@@ -1,9 +1,6 @@
 import datetime
 import io
 import csv
-import os
-import subprocess
-
 from flask import Flask, request, Response, jsonify
 
 from configuration import Configuration
@@ -53,8 +50,8 @@ def updateProduct():
     return Response(status=200)
 
 @application.route('/product_statistics',methods=['GET'])
-# @jwt_required()
-# @roleCheck(role='owner')
+@jwt_required()
+@roleCheck(role='owner')
 def getProductStatistics():
     orders = Orders.query.all()
     products=[]
@@ -88,8 +85,8 @@ def getProductStatistics():
     return jsonify(statistics=statistics),200
 
 @application.route('/category_statistics',methods=['GET'])
-# @jwt_required()
-# @roleCheck(role='owner')
+@jwt_required()
+@roleCheck(role='owner')
 def getCategoryStatistics():
     orders = Orders.query.all()
     sold = []
@@ -162,16 +159,6 @@ def orderProduct():
 @application.route('/search', methods=["GET"])
 @jwt_required()
 @roleCheck(role = "customer")
-# SELECT *
-# FROM table
-# WHERE name LIKE '%c%';
-# result = session.query(your_table).filter(
-#     or_(
-#         your_table.c.categories.like('%|example_category|%'),
-#         your_table.c.categories.like('example_category|%'),
-#         your_table.c.categories.like('%|example_category')
-#     )
-# ).all()
 def searchProduct():
     if request.args.get("name") is not None:
         nameStr = request.args.get("name")
@@ -181,7 +168,7 @@ def searchProduct():
         categoryStr = request.args.get("category")
     else:
         categoryStr = ""
-    Products.query.where()
+
     listOfCategories = []
     listOfProducts = []
     for line in Products.query.all():
@@ -286,16 +273,6 @@ def pick_up_order():
 @application.route("/",methods=["GET"])
 def index():
     return "Hello World"
-
-
-@application.route('/test1',methods=['GET'])
-def test1():
-    os.environ["SPARK_APPLICATION_PYTHON_LOCATION"] = "/app/test1.py"
-    os.environ[
-    "SPARK_SUBMIT_ARGS"] = "--driver-class-path /app/mysql-connector-j-8.0.33.jar --jars /app/mysql-connector-j-8.0.33.jar"
-
-    result = subprocess.check_output(["/template.sh"])
-    return result.decode()
 
 if __name__ == "__main__":
     database.init_app(application)

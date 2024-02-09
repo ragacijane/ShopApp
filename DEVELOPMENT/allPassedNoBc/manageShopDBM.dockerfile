@@ -3,12 +3,12 @@ FROM python:3
 RUN mkdir -p /opt/src/shop
 WORKDIR /opt/src/shop
 
-COPY DEVELOPMENT/allPassedNoBc/shop/migrate.py ./migrate.py
-COPY DEVELOPMENT/allPassedNoBc/shop/configuration.py ./configuration.py
-COPY DEVELOPMENT/allPassedNoBc/shop/model.py ./model.py
-COPY DEVELOPMENT/allPassedNoBc/shop/requirements.txt ./requirements.txt
+COPY shop/migrate.py ./migrate.py
+COPY shop/configuration.py ./configuration.py
+COPY shop/model.py ./model.py
+COPY shop/requirementsMigration.txt ./requirementsMigration.txt
 
-RUN pip install -r ./requirements.txt
+RUN pip install -r ./requirementsMigration.txt
 
 
 ENTRYPOINT ["python","./migrate.py"]

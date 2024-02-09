@@ -18,7 +18,7 @@ level 3
 
 python main.py --type level3 --with-authentication --authentication-url http://127.0.0.1:5002 --owner-url http://127.0.0.1:5001 --customer-url http://127.0.0.1:5001 --courier-url http://127.0.0.1:5001
 
-
+python main.py --type level3 --customer-url http://127.0.0.1:5001 --courier-url http://127.0.0.1:5001 --owner-url http://127.0.0.1:5001
 
 
 

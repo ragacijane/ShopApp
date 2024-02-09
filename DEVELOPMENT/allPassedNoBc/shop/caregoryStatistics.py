@@ -5,7 +5,7 @@ import os
 
 PRODUCTION = True if ("PRODUCTION" in os.environ) else False
 DATABASE_URL = os.environ["DATABASE_URL"] if ("DATABASE_URL" in os.environ) else "localhost"
-DATABASE_NAME = "shopDB"
+DATABASE_URL = "shopDB"
 builder = SparkSession.builder.appName("PySpark Database example")
 
 if (not PRODUCTION):
@@ -20,7 +20,7 @@ spark = builder.getOrCreate()
 orders_data_frame = spark.read \
     .format("jdbc") \
     .option("driver", "com.mysql.cj.jdbc.Driver") \
-    .option("url", f"jdbc:mysql://{DATABASE_URL}:3306/shop") \
+    .option("url", f"jdbc:mysql://{DATABASE_URL}/shop") \
     .option("dbtable", "(SELECT * FROM shop.orders WHERE shop.orders.status = 'COMPLETE') as allOrders") \
     .option("user", "root") \
     .option("password", "root") \
@@ -28,7 +28,7 @@ orders_data_frame = spark.read \
 products_data_frame = spark.read \
     .format("jdbc") \
     .option("driver", "com.mysql.cj.jdbc.Driver") \
-    .option("url", f"jdbc:mysql://{DATABASE_URL}:3306/shop") \
+    .option("url", f"jdbc:mysql://{DATABASE_URL}/shop") \
     .option("dbtable", "(SELECT * FROM shop.products) as allProducts") \
     .option("user", "root") \
     .option("password", "root") \

@@ -74,6 +74,7 @@ services:
 
 
 
+
 #Accounts
   manageAccDB:
     image: mysql

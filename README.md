@@ -3,6 +3,8 @@
 > 
 > ShopApp is system of web applications made in python, created to manage with accounts and shop for some web store.
 # Technologies and Libraries
+> More details about versions you can find in requirements.txt
+> To install them use ``` pip install requirements.txt```
 - Flask
 - SQLAlchemy
 - Docker
@@ -13,6 +15,7 @@
 # SQLAlchemy
 - Used for creating, managing and retrieving data from MySQL database.
 # Docker
+> More details you can find in deployment.yaml
 - Created system with Docker compose.
 - System have 2 parts, one for managing accounts and one for managing shop.
 - Each system is created from three Docker images

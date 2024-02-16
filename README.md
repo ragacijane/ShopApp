@@ -25,4 +25,17 @@
 - Statistics are made in Docker Image shablon that i found on [Big Data Europe GitHub](https://github.com/big-data-europe/docker-spark).
 - Spark claster is reading data from base and gives statistics that are required.
 - Spark Master server is alo available
-- Containers of spark clasters are in system for managing shop. 
+- Containers of spark clasters are in system for managing shop.
+# System Variables
+For Spark image:
+```
+HADOOP HOME : C:\hadoop\bin\winutils.exe
+JAVA_HOME: C:\Program Files\jdk...
+```
+For python applications that are using pyspark:
+```
+PYSPARK_DRIVER_PYTHON=jupyter;
+PYSPARK_DRIVER_PYTHON_ARGS=notebook;
+PYSPARK_PYTHON=python;
+PYTHONUNBUFFERED=1
+```

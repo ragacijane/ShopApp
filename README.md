@@ -1,3 +1,7 @@
+#TODO
+- SqlAlchemy
+- Redis
+- Blockchain
 # ShopApp
 > System is not finished!
 > 

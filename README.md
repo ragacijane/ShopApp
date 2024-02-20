@@ -46,3 +46,10 @@ PYSPARK_DRIVER_PYTHON_ARGS=notebook;
 PYSPARK_PYTHON=python;
 PYTHONUNBUFFERED=1
 ```
+# Flask Migrate
+>For local tests
+```
+python applications/manage.py db init
+python applications/manage.py db migrate -m "Text Message"
+python applications/manage.py db upgrade
+```

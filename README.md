@@ -1,5 +1,5 @@
 #TODO
-- SqlAlchemy
+- SqlAlchemy - sql queries
 - Redis
 - Blockchain
 # ShopApp
